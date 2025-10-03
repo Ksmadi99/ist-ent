@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IST Tracker - Track Comebacks & Releases</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: #0a0a0a; color: #fff; }
+        header { position: fixed; top: 0; width: 100%; background: rgba(0,0,0,0.9); padding: 15px 0; z-index: 100; }
+        nav { max-width: 1200px; margin: auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5em; color: #00f0ff; font-weight: bold; }
+        nav ul { list-style: none; display: flex; gap: 20px; }
+        nav a { color: #ff00ff; text-decoration: none; font-weight: 600; transition: color 0.3s; }
+        nav a:hover { color: #00f0ff; }
+        .search-bar { margin: 20px auto; max-width: 1200px; display: flex; justify-content: center; }
+        .search-bar input { padding: 10px; width: 300px; background: #111; border: 1px solid #00f0ff; color: #fff; border-radius: 5px 0 0 5px; }
+        .search-bar button { padding: 10px 15px; background: #00f0ff; border: none; color: #000; cursor: pointer; border-radius: 0 5px 5px 0; }
+        .hero { height: 60vh; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://via.placeholder.com/1920x1080/000/00f0ff?text=IST+Tracker+Hero') center/cover; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-top: 70px; }
+        .hero h1 { font-size: 3em; color: #ff00ff; margin-bottom: 10px; }
+        .hero p { font-size: 1.2em; margin-bottom: 20px; }
+        .hero button { padding: 10px 20px; background: #ff00ff; border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 5px; transition: transform 0.3s; }
+        .hero button:hover { transform: scale(1.05); }
+        section { max-width: 1200px; margin: 50px auto; padding: 20px; }
+        h2 { font-size: 2em; color: #00f0ff; text-align: center; margin-bottom: 20px; }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .view-toggle button, .sort-select { padding: 5px 10px; background: #111; color: #fff; border: 1px solid #ff00ff; border-radius: 5px; }
+        .releases { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .release-item { background: #111; padding: 15px; border-radius: 10px; text-align: center; transition: transform 0.3s; cursor: pointer; }
+        .release-item:hover { transform: translateY(-5px); }
+        .release-item img { width: 100%; height: 250px; object-fit: cover; border-radius: 5px; }
+        .release-item h3 { margin: 10px 0; color: #ff00ff; }
+        .release-item p { font-size: 0.9em; color: #ccc; }
+        .track-btn { margin-top: 10px; padding: 5px 10px; background: #00f0ff; border: none; color: #000; border-radius: 5px; cursor: pointer; }
+        .list-view .releases { grid-template-columns: 1fr; }
+        .list-view .release-item { display: flex; align-items: center; }
+        .list-view .release-item img { width: 100px; height: 140px; margin-right: 20px; }
+        .list-view .release-item .info { text-align: left; flex: 1; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; z-index: 200; }
+        .modal-content { background: #111; padding: 20px; border-radius: 10px; text-align: center; max-width: 400px; }
+        .close { position: absolute; top: 20px; right: 30px; color: #fff; font-size: 2em; cursor: pointer; }
+        footer { background: #111; padding: 20px; text-align: center; }
+        footer a { color: #00f0ff; text-decoration: none; margin: 0 10px; }
+        @media (max-width: 768px) { .hero h1 { font-size: 2em; } .controls { flex-direction: column; gap: 10px; } }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">IST Tracker</div>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#latest">Latest Comebacks</a></li>
+                <li><a href="#upcoming">Upcoming</a></li>
+                <li><a href="#artists">Artists</a></li>
+                <li><a href="#community">Community</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="search-bar">
+        <input type="text" placeholder="Search releases, artists... (e.g., THE BOYZ comeback)">
+        <button onclick="searchReleases()">Search</button>
+    </div>
+
+    <section id="home" class="hero">
+        <h1>Track IST Entertainment Releases</h1>
+        <p>Follow comebacks, albums, and events for THE BOYZ, Apink, ATBO & more. Join the fan community!</p>
+        <button onclick="document.getElementById('signup-modal').style.display='flex'">Create Free Account</button>
+    </section>
+
+    <section id="latest">
+        <h2>Latest Comebacks</h2>
+        <div class="controls">
+            <div>
+                <button onclick="toggleView('grid')">Grid View</button>
+                <button onclick="toggleView('list')">List View</button>
+            </div>
+            <select class="sort-select" onchange="sortReleases(this.value)">
+                <option value="date">Sort by Air Date</option>
+                <option value="popularity">People Watched</option>
+                <option value="rank">Rank</option>
+            </select>
+        </div>
+        <div class="releases" id="releases-grid">
+            <!-- Sample items; in real site, dynamically load -->
+            <div class="release-item" onclick="trackRelease('THE BOYZ - 2025 Comeback')">
+                <img src="https://via.placeholder.com/200x250/ff00ff/000?text=THE+BOYZ+Album" alt="THE BOYZ">
+                <h3>THE BOYZ: The Fast</h3>
+                <p>Released: Oct 02, 2025 | Artist: THE BOYZ</p>
+                <button class="track-btn" onclick="event.stopPropagation(); alert('Added to your watchlist!')">Track</button>
+            </div>
+            <div class="release-item" onclick="trackRelease('Apink - Fan Meeting')">
+                <img src="https://via.placeholder.com/200x250/00ff00/000?text=Apink+Event" alt="Apink">
+                <h3>Apink: Eternal Flame</h3>
+                <p>Released: Sep 30, 2025 | Artist: Apink</p>
+                <button class="track-btn" onclick="event.stopPropagation(); alert('Added to your watchlist!')">Track</button>
+            </div>
+            <div class="release-item" onclick="trackRelease('ATBO - Single')">
+                <img src="https://via.placeholder.com/200x250/ff9900/000?text=ATBO+Single" alt="ATBO">
+                <h3>ATBO: Bloom</h3>
+                <p>Released: Oct 01, 2025 | Artist: ATBO</p>
+                <button class="track-btn" onclick="event.stopPropagation(); alert('Added to your watchlist!')">Track</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="upcoming">
+        <h2>Upcoming Releases (Premieres)</h2>
+        <div class="controls">
+            <select class="sort-select" onchange="sortReleases(this.value)">
+                <option value="date">Sort by Date</option>
+                <option value="popularity">Hype Level</option>
+            </select>
+        </div>
+        <div class="releases">
+            <div class="release-item">
+                <img src="https://via.placeholder.com/200x250/00f0ff/000?text=THE+BOYZ+Upcoming" alt="Upcoming">
+                <h3>THE BOYZ: World Tour Teaser</h3>
+                <p>Premieres: Oct 15, 2025</p>
+                <button class="track-btn">Pre-Track</button>
+            </div>
+            <div class="release-item">
+                <img src="https://via.placeholder.com/200x250/ff00ff/000?text=Apink+Upcoming" alt="Upcoming">
+                <h3>Apink: 15th Anniversary</h3>
+                <p>Premieres: Nov 01, 2025</p>
+                <button class="track-btn">Pre-Track</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 IST Tracker Fan Hub | <a href="#">Discord</a> | <a href="#">Feedback</a> | <a href="#">VIP Features</a></p>
+    </footer>
+
+    <!-- Signup Modal (like Simkl's) -->
+    <div id="signup-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('signup-modal')">&times;</span>
+            <h3>Create Account</h3>
+            <p>Track your favorites and join the community!</p>
+            <input type="email" placeholder="Email" style="width: 100%; padding: 10px; margin: 10px 0; background: #222; color: #fff; border: 1px solid #00f0ff;">
+            <button style="width: 100%; padding: 10px; background: #ff00ff; border: none; color: #fff; border-radius: 5px;">Sign Up</button>
+            <p>Already have an account? <a href="#" onclick="switchModal('login-modal')">Sign In</a></p>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('login-modal')">&times;</span>
+            <h3>Sign In</h3>
+            <input type="email" placeholder="Email" style="width: 100%; padding: 10px; margin: 10px 0; background: #222; color: #fff; border: 1px solid #00f0ff;">
+            <input type="password" placeholder="Password" style="width: 100%; padding: 10px; margin: 10px 0; background: #222; color: #fff; border: 1px solid #00f0ff;">
+            <button style="width: 100%; padding: 10px; background: #00f0ff; border: none; color: #000; border-radius: 5px;">Login</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleView(view) {
+            const releases = document.getElementById('releases-grid');
+            releases.className = view === 'list' ? 'releases list-view' : 'releases';
+        }
+        function sortReleases(value) {
+            // Simulate sorting - in real app, sort DOM or fetch API
+            alert(`Sorting by ${value}`);
+        }
+        function searchReleases() {
+            const query = document.querySelector('.search-bar input').value;
+            alert(`Searching for: ${query} (Results would load here)`);
+        }
+        function trackRelease(name) {
+            document.getElementById('track-modal').style.display = 'flex'; // Assume a track modal
+            // Or directly alert(name + ' tracked!');
+        }
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+        function switchModal(newId) {
+            closeModal('signup-modal');
+            document.getElementById(newId).style.display = 'flex';
+        }
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
